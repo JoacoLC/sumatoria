@@ -3,13 +3,6 @@
 
 typedef uintptr_t (*game_state_t)(game_t*);
 
-static void game_setup(game_t*);
-static void game_render(game_t*, game_state_t);
-
-#ifdef DEBUG
-static void cmd_render(game_t*);
-#endif // DEBUG
-
 static uintptr_t piece_fall(game_t*);
 static uintptr_t operation_calc(game_t*);
 static uintptr_t operation_anim(game_t*);
@@ -17,16 +10,22 @@ static uintptr_t explosion_anim(game_t*);
 static uintptr_t blocks_fall(game_t*);
 static uintptr_t check_combostillgoing(game_t*);
 
+static void game_render(game_t*);
+
+#ifdef DEBUG
+static void cmd_render(game_t*);
+#endif // DEBUG
+
 // Each game state function returns a function pointer
 // to the next state. Having a function return a pointer
 // to it's own type would cause infinite recursion, so
 // it must be cast to uintptr_t first, then cast back
 // to the correct pointer type.
-#define gamestate_update(state, game) state = (game_state_t)state(game)
+#define gamestate_update(game) game.state = (game_state_t)game.state(&game)
 
-void sc_game1p() { // Setup the main game.
+void sc_game1p() {
     game_t game1p = {
-        .level = 0,
+        .level      = 0,
         .fall_speed = 2000,
         .level      = 0,
         .fall_speed = 2000,
@@ -39,13 +38,15 @@ void sc_game1p() { // Setup the main game.
         .blocks_fell     = false,
         .operations_done = false,
 
+        .state = &piece_fall,
+
         .score = 0,
         .on    = true
     };
 
-    game_setup(&game1p);
-
-    game_state_t game_state = &piece_fall;
+    populate_playarea(game1p.playarea);
+    timer_set(TIMER_P1PIECEFALL, game1p.fall_speed);
+    piece_new(&game1p.piece);
 
     while (game1p.on) {
         if (!events.gameon) {
@@ -60,18 +61,12 @@ void sc_game1p() { // Setup the main game.
             if (curr_scene == sc_title) return;
         }
 
-        gamestate_update(game_state, &game1p);
-        game_render(&game1p, game_state);
+        gamestate_update(game1p);
+        game_render(&game1p);
         #ifdef DEBUG
         cmd_render(&game1p);
         #endif // DEBUG
     }
-}
-
-static void game_setup(game_t* g) {
-    populate_playarea(g->playarea);
-    timer_set(TIMER_P1PIECEFALL, g->fall_speed);
-    piece_new(&g->piece);
 }
 
 static uintptr_t piece_fall(game_t* g) {
@@ -291,7 +286,7 @@ static uintptr_t check_combostillgoing(game_t* g) {
     return (uintptr_t)&piece_fall; 
 }
 
-static void game_render(game_t* g, game_state_t state) {
+static void game_render(game_t* g) {
     render_clear();
 
     text_spacingx = CELL_SIZE / 2;
@@ -319,7 +314,7 @@ static void game_render(game_t* g, game_state_t state) {
     text_spacingx = CELL_SIZE / 3;
     text_spacingy = CELL_SIZE / 2;
 
-    if (state == &explosion_anim) {
+    if (g->state == &explosion_anim) {
         for (int8_t i = 0; i < QUADTINY_AMT; i++) {
             if (g->quadtiny[i].curr_frame >= 3) continue;
             metasprite_render(
@@ -331,7 +326,7 @@ static void game_render(game_t* g, game_state_t state) {
         }
     }
 
-    if (state != &piece_fall) {
+    if (g->state != &piece_fall) {
         render();
         return;
     }

@@ -73,7 +73,7 @@ typedef struct {
     rotate_state_t rotation;
 } piece_t;
 
-typedef struct {
+typedef struct game_s {
     uint32_t score;
 
     block_t  playarea[PLAYAREA_H][PLAYAREA_W];
@@ -99,6 +99,8 @@ typedef struct {
     uint8_t  combo;
 
     int8_t   result;
+    
+    uintptr_t (*state)(struct game_s*);
 
 	position_t operation_startpos;
 	position_t operation_signpos;
