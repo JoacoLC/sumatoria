@@ -73,6 +73,14 @@ typedef struct {
     rotate_state_t rotation;
 } piece_t;
 
+typedef struct {
+    position_t startpos;
+    position_t signpos;
+    position_t endpos;
+
+    int8_t result;
+} operationinfo_t;
+
 typedef struct game_s {
     uint32_t score;
 
@@ -90,21 +98,17 @@ typedef struct game_s {
     // Current level. Higher levels aren't necessarily harder.
     uint16_t level;
 
-    bool     piecehitstack   :1;
-    bool     playfieldraise  :1;
-    bool     on              :1;
-    bool     blocks_fell     :1;
-    bool     operations_done :1;
-    int                      :3;
+    bool     piecehitstack;
+    bool     playfieldraise;
+    bool     on;
+    bool     blocks_fell;
+
+    uint8_t  operations_done;
     uint8_t  combo;
 
-    int8_t   result;
-    
     uintptr_t (*state)(struct game_s*);
 
-	position_t operation_startpos;
-	position_t operation_signpos;
-	position_t operation_endpos;
+    operationinfo_t operationinfo[2];
 
     #define QUADTINY_AMT        8
 

@@ -36,7 +36,7 @@ void sc_game1p() {
         .fall_add  = 10,
         .lock_time = LOCKTIME,
         .blocks_fell     = false,
-        .operations_done = false,
+        .operations_done = 0,
 
         .state = &piece_fall,
 
@@ -125,32 +125,32 @@ static uintptr_t piece_fall(game_t* g) {
 }
 
 static uintptr_t operation_calc(game_t* g) {
-    g->operations_done = true;
+    g->operations_done = 0;
 
     for (uint8_t y = 0; y < PLAYAREA_H - 1; y++) for (uint8_t x = 1; x < PLAYAREA_W - 1; x++) { // Operation.
         if(!(is_number(g, x, y))) continue;
 
         if (is_sign(g, x+1, y) && is_number(g, x+2, y)) {
-            g->operation_signpos.x = x + 1;
-            g->operation_signpos.y = y;
-            g->operation_endpos.x = x + 2;
-            g->operation_endpos.y = y;
+            g->operationinfo[g->operations_done].signpos.x = x + 1;
+            g->operationinfo[g->operations_done].signpos.y = y;
+            g->operationinfo[g->operations_done].endpos.x = x + 2;
+            g->operationinfo[g->operations_done].endpos.y = y;
         } else if (is_sign(g, x, y+1) && is_number(g, x, y+2)) {
-            g->operation_signpos.x = x;
-            g->operation_signpos.y = y + 1;
-            g->operation_endpos.x = x;
-            g->operation_endpos.y = y + 2;
+            g->operationinfo[g->operations_done].signpos.x = x;
+            g->operationinfo[g->operations_done].signpos.y = y + 1;
+            g->operationinfo[g->operations_done].endpos.x = x;
+            g->operationinfo[g->operations_done].endpos.y = y + 2;
         } else continue;
 
-        g->operation_startpos.x = x;
-        g->operation_startpos.y = y;
+        g->operationinfo[g->operations_done].startpos.x = x;
+        g->operationinfo[g->operations_done].startpos.y = y;
 
-        if (g->playarea[y][x].val <= g->playarea[g->operation_endpos.y][g->operation_endpos.x].val) {
-            g->result = g->playarea[g->operation_endpos.y][g->operation_endpos.x].val - g->playarea[y][x].val;
-        } else g->result = g->playarea[y][x].val - g->playarea[g->operation_endpos.y][g->operation_endpos.x].val;
+        if (g->playarea[y][x].val <= g->playarea[g->operationinfo[g->operations_done].endpos.y][g->operationinfo[g->operations_done].endpos.x].val) {
+            g->operationinfo[g->operations_done].result = g->playarea[g->operationinfo[g->operations_done].endpos.y][g->operationinfo[g->operations_done].endpos.x].val - g->playarea[y][x].val;
+        } else g->operationinfo[g->operations_done].result = g->playarea[y][x].val - g->playarea[g->operationinfo[g->operations_done].endpos.y][g->operationinfo[g->operations_done].endpos.x].val;
 
         // Eliminate zeroes and add score accordingly
-        if (g->result == 0) {
+        if (g->operationinfo[g->operations_done].result == 0) {
             if (g->combo < COMBO_MAX) g->combo++;
 
             // The bigger the eliminated number, the bigger the score.
@@ -158,14 +158,17 @@ static uintptr_t operation_calc(game_t* g) {
             next_level(g);
         }
 
-        g->operation_startpos.x = x;
-        g->operation_startpos.y = y;
+        g->operationinfo[g->operations_done].startpos.x = x;
+        g->operationinfo[g->operations_done].startpos.y = y;
+        g->operations_done++;
+    }
+
+    if (g->operations_done > 0) {
         timer_set(TIMER_P1CLEARNUM, OPERATIONSPEED);
         return (uintptr_t)&operation_anim;
     }
-
     timer_set(TIMER_P1BLOCKFALL, BLOCKFALLSPEED);
-    return (uintptr_t)&blocks_fall;
+    return (uintptr_t)&check_combostillgoing;
 }
 
 static uintptr_t operation_anim(game_t* g) {
@@ -173,23 +176,30 @@ static uintptr_t operation_anim(game_t* g) {
 
     if (timers[TIMER_P1CLEARNUM]) {
         sfx_play(SFX_OPERATION, SONG_LENGTH_MS(1));
-        g->playarea[g->operation_signpos.y][g->operation_signpos.x] = 
-            g->playarea[g->operation_startpos.y][g->operation_startpos.x];
-        block_clear(&g->playarea[g->operation_startpos.y][g->operation_startpos.x]);
+        for (int i = 0; i < g->operations_done; i++) {
+            g->playarea[g->operationinfo[i].signpos.y][g->operationinfo[i].signpos.x] = g->playarea[g->operationinfo[i].startpos.y][g->operationinfo[i].startpos.x];
+            block_clear(&g->playarea[g->operationinfo[i].startpos.y][g->operationinfo[i].startpos.x]);
+        }   
         timer_kill(TIMER_P1CLEARNUM);
         timer_set(TIMER_P1CLEARSIGN, OPERATIONSPEED);
         return (uintptr_t)&operation_anim;
     } else if (timers[TIMER_P1CLEARSIGN]) {
-        block_changeval (
-            &g->playarea[g->operation_endpos.y][g->operation_endpos.x],
-            g->result
-        );
-        block_clear(&g->playarea[g->operation_signpos.y][g->operation_signpos.x]);
-        timer_kill(TIMER_P1CLEARSIGN);
-        if (g->result == 0) {
-            timer_set(TIMER_P1REMOVEZERO, OPERATIONSPEED * 2);
-            return (uintptr_t)&explosion_anim;
-        } else return (uintptr_t)&operation_calc;
+        uintptr_t retval = (uintptr_t) &blocks_fall;
+
+        for (int i = 0; i < g->operations_done; i++) {
+            block_changeval (
+                &g->playarea[g->operationinfo[i].endpos.y][g->operationinfo[i].endpos.x],
+                g->operationinfo[i].result
+            );
+            block_clear(&g->playarea[g->operationinfo[i].signpos.y][g->operationinfo[i].signpos.x]);
+                    timer_kill(TIMER_P1CLEARSIGN);
+            if (g->operationinfo[i].result == 0) {
+                timer_set(TIMER_P1REMOVEZERO, OPERATIONSPEED * 2);
+                retval = (uintptr_t)&explosion_anim;
+            }
+        }
+
+        return retval;
     }
 
     return (uintptr_t)&operation_anim;
@@ -202,15 +212,20 @@ static uintptr_t explosion_anim(game_t* g) {
     events_chk();
 
     if (timers[TIMER_P1REMOVEZERO]) {
-        block_clear(&g->playarea[g->operation_endpos.y][g->operation_endpos.x]);
+        for (int i = 0; i < g->operations_done; i++) if (g->operationinfo[i].result == 0) {
+            block_clear(&g->playarea[g->operationinfo[i].endpos.y][g->operationinfo[i].endpos.x]);
+        }
         timer_kill(TIMER_P1REMOVEZERO);
         timer_set(TIMER_P1EXPLOSIONFALL, EXPLOSIONSPEED / 75);
         timer_set(TIMER_P1EXPLOSIONFRAMESTEP, EXPLOSIONSPEED / 5);
         timer_set(TIMER_P1EXPLOSION, EXPLOSIONSPEED);
-                
+        
+        uint8_t j = 0;
         for (uint8_t i = 0; i < QUADTINY_AMT; i++) {
-            g->quadtiny[i].position_x = g->operation_endpos.x * CELL_SIZE + randint() % CELL_SIZE / 2;
-            g->quadtiny[i].position_y = g->operation_endpos.y * CELL_SIZE + randint() % CELL_SIZE / 2;
+            if (i == QUADTINY_AMT / 2) j = 1;
+            if (g->operations_done <= 1 && j == 1) break;
+            g->quadtiny[i].position_x = g->operationinfo[j].endpos.x * CELL_SIZE + randint() % CELL_SIZE / 2;
+            g->quadtiny[i].position_y = g->operationinfo[j].endpos.y * CELL_SIZE + randint() % CELL_SIZE / 2;
             g->quadtiny[i].vspeed     = -32;
             g->quadtiny[i].hspeed     = -64 + randint() % 64;
             g->quadtiny[i].curr_frame = 0;
@@ -237,7 +252,7 @@ static uintptr_t explosion_anim(game_t* g) {
         timer_kill(TIMER_P1EXPLOSION);
         timer_kill(TIMER_P1EXPLOSIONFALL);
         timer_kill(TIMER_P1EXPLOSIONFRAMESTEP);
-        return (uintptr_t)&operation_calc;
+        return (uintptr_t)&blocks_fall;
     }
 
     return (uintptr_t)&explosion_anim;
@@ -258,19 +273,19 @@ static uintptr_t blocks_fall(game_t* g) {
             }
         }
 
-        if (!blocks_falling) return (uintptr_t)&check_combostillgoing;
+        if (!blocks_falling) return (uintptr_t)&operation_calc;
     } 
     
     return (uintptr_t)&blocks_fall;
 }
 
 static uintptr_t check_combostillgoing(game_t* g) {
-    if (!g->operations_done || g->blocks_fell) {
-        g->blocks_fell     = false;
+    if (g->operations_done || g->blocks_fell) {
+        g->blocks_fell = false;
         return (uintptr_t)&operation_calc;
     }
-    g->operations_done = false;
-    g->blocks_fell     = false;
+
+    g->blocks_fell = false;
 
     piece_new(&g->piece);
     g->combo = 0;
