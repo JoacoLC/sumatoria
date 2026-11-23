@@ -17,12 +17,12 @@ void sc_gameover() {
 	text_render(0, 0, que_mal);
 	render();
 
-	while (events.gameon) {
+	while (gameon) {
 		events_chk();
-		if (events.uppress) {
+		if (inputs_key_p1[INP_UP].pressed) {
 			curr_scene = &sc_game1p;
 			goto end;
-		} else if (events.dwpress) {
+		} else if (inputs_key_p1[INP_DOWN].pressed) {
 			curr_scene = &sc_title;
 			goto end;
 		}

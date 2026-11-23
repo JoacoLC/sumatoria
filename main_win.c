@@ -65,12 +65,13 @@ int WINAPI WinMain(HINSTANCE currinst_hnd, HINSTANCE previnst_hnd, PSTR cmd_args
     );
 
     seed_set();
-    init_graphics();
+    inputs_init();
+    graphics_init();
     sound_init();
 
     curr_scene = &sc_title;
 
-    while (events.gameon) curr_scene();
+    while (gameon) curr_scene();
 
     return 0;
 }
@@ -248,21 +249,17 @@ long sfx_getvolume() {
 }
 
 void events_chk() {
-    events.anykpress = false;
-    events.uppress   = false;
-    events.lfpress   = false;
-    events.dwpress   = false;
-    events.ripress   = false;
-    events.rotleft   = false;
-    events.rotright  = false;
-    events.pause     = false;
-
+    for (uint8_t i = 0; i < INPUTS_AMT; i++)  inputs_key_p1[i].pressed = false;
     for (uint8_t i = 0; i < TIMERS_AMT; i++) timers[i] = false;
 
     if (GetMessage(&_msg, NULL, 0, 0) > 0) {
         TranslateMessage(&_msg);
         DispatchMessage(&_msg);
     }
+}
+
+void keyname_get(uintptr_t key, char* buffer) {
+    GetKeyNameTextA(key, buffer, 1);
 }
 
 LRESULT CALLBACK window_proc(HWND handle, UINT msg, WPARAM w_param, LPARAM l_param) {
@@ -280,20 +277,18 @@ LRESULT CALLBACK window_proc(HWND handle, UINT msg, WPARAM w_param, LPARAM l_par
         DestroyWindow(handle);
         return 0;
     } else if (msg == WM_DESTROY) {
-        events.gameon = false;
+        gameon = false;
         wglMakeCurrent(NULL, NULL);
         wglDeleteContext(gl_rendercontext);
         PostQuitMessage(0);
         return 0;
     } else if (msg == WM_KEYDOWN) {
-        events.anykpress = true;
-        events.pause     = w_param == events.vk_pause;
-        events.uppress   = w_param == events.vk_uppress;
-        events.lfpress   = w_param == events.vk_lfpress;
-        events.dwpress   = w_param == events.vk_dwpress;
-        events.ripress   = w_param == events.vk_ripress;
-        events.rotleft   = LOBYTE(HIWORD(l_param)) == events.sc_rotleft;
-        events.rotright  = LOBYTE(HIWORD(l_param)) == events.sc_rotright;
+        inputs_key_p1[INP_ANYKEY].pressed = true;
+        for (uint8_t i = 0; i <= INP_DOWN; i++) {
+            inputs_key_p1[i].pressed = w_param == inputs_key_p1[i].key;
+        }
+        inputs_key_p1[INP_ACTION1].pressed = LOBYTE(HIWORD(l_param)) == inputs_key_p1[INP_ACTION1].key;
+        inputs_key_p1[INP_ACTION2].pressed = LOBYTE(HIWORD(l_param)) == inputs_key_p1[INP_ACTION2].key;
     } else if (msg == WM_TIMER) {
          timers[w_param] = true;
          if (timers[TIMER_SFXCUT]) {

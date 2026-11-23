@@ -16,9 +16,9 @@ void sc_title() {
     text_render(0, 0, title);
     render();
 
-    while (events.gameon) {
+    while (gameon) {
         events_chk();
-        if (events.anykpress && !events.pause) {
+        if (inputs_key_p1[INP_ANYKEY].pressed) {
             curr_scene = &sc_game1p;
             return;
         }

@@ -16,7 +16,7 @@ texture_t spritesheet;
 
 const unsigned char* gl_errorget();
 
-void init_graphics() {
+void graphics_init() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 

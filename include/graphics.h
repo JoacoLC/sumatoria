@@ -54,7 +54,7 @@ uint16_t text_size 	   = CELL_SIZE / 2;
 uint16_t text_spacingx = CELL_SIZE / 3;
 uint16_t text_spacingy = CELL_SIZE / 2;
 
-extern void  init_graphics();
+extern void  graphics_init();
 extern void  render();
 extern void  render_clear();
 extern void  texture_free(texture_t*);

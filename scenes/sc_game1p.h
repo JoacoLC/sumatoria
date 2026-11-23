@@ -49,13 +49,13 @@ void sc_game1p() {
     piece_new(&game1p.piece);
 
     while (game1p.on) {
-        if (!events.gameon) {
+        if (!gameon) {
             game1p.on  = false;
             curr_scene = &sc_gameover;
             return;
         }
 
-        if (events.pause) {
+        if (inputs_key_p1[INP_PAUSE].pressed) {
             sfx_play(SFX_PAUSE, SONG_LENGTH_MS(1));
             sc_optmenu();
             if (curr_scene == sc_title) return;
@@ -83,16 +83,16 @@ static uintptr_t piece_fall(game_t* g) {
         g->piecehitstack = true;
     }
 
-    if (events.uppress) {
+    if (inputs_key_p1[INP_UP].pressed) {
         if (!space_tomove(g, 0, 1)) timers[TIMER_P1PIECELOCK] = true;
         else while (space_tomove(g, 0, 1)) piece_move(&g->piece, 0, 1);
-    } else if (events.dwpress) {
+    } else if (inputs_key_p1[INP_DOWN].pressed) {
         if (!space_tomove(g, 0, 1)) timers[TIMER_P1PIECELOCK] = true;
         else piece_movedir.y = 1;
     }
 
-    if      (events.lfpress && space_tomove(g, -1, 0)) piece_movedir.x = -1;
-    else if (events.ripress && space_tomove(g, 1,  0)) piece_movedir.x = 1;
+    if      (inputs_key_p1[INP_LEFT].pressed && space_tomove(g, -1, 0)) piece_movedir.x = -1;
+    else if (inputs_key_p1[INP_RIGHT].pressed && space_tomove(g, 1,  0)) piece_movedir.x = 1;
 
     if (piece_movedir.x != 0 || piece_movedir.y != 0) {
         sfx_play(SFX_MOVE, SONG_LENGTH_MS(1));
@@ -100,11 +100,11 @@ static uintptr_t piece_fall(game_t* g) {
 
     piece_move(&g->piece, piece_movedir.x, piece_movedir.y);
 
-    if (events.rotleft)  {
+    if (inputs_key_p1[INP_ACTION1].pressed)  {
         if (piece_rotate(g, LEFT)) sfx_play(SFX_ROTATION, SONG_LENGTH_MS(1));
     }
-    if (events.rotright) {
-        if (piece_rotate(g, RIGHT)) sfx_play(SFX_ROTATION, SONG_LENGTH_MS(1));
+    if (inputs_key_p1[INP_ACTION2].pressed) {
+        if (piece_rotate(g, INP_RIGHT)) sfx_play(SFX_ROTATION, SONG_LENGTH_MS(1));
     }
 
     if (timers[TIMER_P1PIECELOCK]) {

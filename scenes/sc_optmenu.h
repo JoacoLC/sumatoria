@@ -25,18 +25,11 @@ typedef struct menu_s {
 void menu_render(menu_t*);
 void menumain_render(menu_t*);
 void menusound_render(menu_t*);
+void menucontrol_render(menu_t*);
 
 void menu_unpause();
 void menu_gotocontrols();
-
-    // All of these call menu_changecontrol() under the hood.
-    void menu_setupkey();
-    void menu_setdownkey();
-    void menu_setleftkey();
-    void menu_setrightkey();
-    void menu_setrotleftkey();
-    void menu_setrotrightkey();
-    void menu_setpausekey();
+    void menu_changecontrol();
 void menu_gotographics();
 
     // ..., 720x1280
@@ -55,22 +48,30 @@ void menu_gotolanguage();
     void menu_changelanguage();
 void menu_exitgame();
 
-void change_control(uintptr_t*);
-
 menuitem_t menumain_items[] = {
-    { &menu_unpause,      " CONTINUAR"  },
-    { NULL,               " CONTROLES"  },
-    { NULL,               " GRAFICOS"   },
-    { &menu_gotosound,    " SONIDO"     },
-    { NULL,               " IDIOMA"     },
-    { &menu_exitgame,     " SALIR"      }
+    { &menu_unpause,      " CONTINUAR" },
+    { &menu_gotocontrols, " CONTROLES" },
+    { NULL,               " GRAFICOS"  },
+    { &menu_gotosound,    " SONIDO"    },
+    { NULL,               " IDIOMA"    },
+    { &menu_exitgame,     " SALIR"     }
 };
 
 menuitem_t menusound_items[] = {
-    { &menu_musicvolume, " MUSICA"    },
-    { &menu_sfxvolume,   " EFECTOS"   },
-    { NULL,              " BUFFER"    },
-    { NULL,              " SAMPLERATE"}
+    { &menu_musicvolume, " MUSICA"     },
+    { &menu_sfxvolume,   " EFECTOS"    },
+    { NULL,              " BUFFER"     },
+    { NULL,              " SAMPLERATE" }
+};
+
+menuitem_t menucontrol_items[] = {
+    { NULL, " IZQUIERDA"  },
+    { NULL, " DERECHA"    },
+    { NULL, " ABAJO"      },
+    { NULL, " INSTACAIDA" },
+    { NULL, " ACCION 1"   },
+    { NULL, " ACCION 2"   },
+    { NULL, " PAUSA"      }
 };
 
 menu_t menu_main = {
@@ -89,6 +90,14 @@ menu_t menu_sound = {
     .render_func = menusound_render
 };
 
+menu_t menu_control = {
+    .curr_item   = 0,
+    .item_amount = 7,
+    .prev_menu   = &menu_main,
+    .items       = menucontrol_items,
+    .render_func = menucontrol_render
+};
+
 menu_t* curr_menu;
 
 void sc_optmenu() {
@@ -103,25 +112,25 @@ void sc_optmenu() {
     
     while (true) {
         events_chk();
-        if (!events.gameon) return;
-        if (events.dwpress) { // Move cursor through the item list.
+        if (!gameon) return;
+        if (inputs_key_p1[INP_DOWN].pressed) { // Move cursor through the item list.
             if (curr_menu->curr_item < curr_menu->item_amount - 1) curr_menu->curr_item++;
             else curr_menu->curr_item = 0;
             sfx_play(SFX_MOVE, SONG_LENGTH_MS(1));
-        } else if (events.uppress) {
+        } else if (inputs_key_p1[INP_UP].pressed) {
             if (curr_menu->curr_item > 0) curr_menu->curr_item--;
             else curr_menu->curr_item = curr_menu->item_amount - 1;
             sfx_play(SFX_MOVE, SONG_LENGTH_MS(1));
         }
 
-        if (events.rotright) {
+        if (inputs_key_p1[INP_ACTION2].pressed) {
             curr_menu = curr_menu->prev_menu;
         } else {
             if (curr_menu->items[curr_menu->curr_item].action != NULL)
                 curr_menu->items[curr_menu->curr_item].action();
         }
 
-        if (events.pause) curr_menu = NULL;
+        if (inputs_key_p1[INP_PAUSE].pressed) curr_menu = NULL;
 
         if (curr_menu == NULL) {
             music_setvolume(music_getvolume() + OPTMENU_VOLUME_DIP);
@@ -172,31 +181,54 @@ void menusound_render(menu_t* m) {
     render();
 }
 
+void menucontrol_render(menu_t* m) {
+    #ifdef DEBUG
+    clear_buf();
+    #endif // DEBUG
+    render_clear();
+
+    menu_render(m);
+    for (int i = 0; i < m->item_amount; i++) {
+        text_render(CELL_SIZE * 5, CELL_SIZE * i, inputs_key_p1[i].name);
+    }
+    
+    render();
+}
+
 void menu_unpause() {
-    if (events.rotleft) curr_menu = NULL;
+    if (inputs_key_p1[INP_PAUSE].pressed) curr_menu = NULL;
 }
 
 void menu_exitgame() {
-    if (events.rotleft) {
+    if (inputs_key_p1[INP_ACTION2].pressed) {
         curr_scene = &sc_title;
         curr_menu  = NULL;
     }
 }
 
 void menu_gotosound() {
-    if (events.rotleft) curr_menu = &menu_sound;
+    if (inputs_key_p1[INP_ACTION2].pressed) curr_menu = &menu_sound;
 }
 
 void menu_musicvolume() {
     music_getvolume();
-    if      (events.lfpress) music_setvolume(music_volume - 50);
-    else if (events.ripress) music_setvolume(music_volume + 50);
+    if      (inputs_key_p1[INP_LEFT].pressed) music_setvolume(music_volume - 50);
+    else if (inputs_key_p1[INP_RIGHT].pressed) music_setvolume(music_volume + 50);
 }
 
 void menu_sfxvolume() {
     sfx_getvolume();
-    if      (events.lfpress) sfx_setvolume(sfx_volume - 50);
-    else if (events.ripress) sfx_setvolume(sfx_volume + 50);
+    if      (inputs_key_p1[INP_LEFT].pressed) sfx_setvolume(sfx_volume - 50);
+    else if (inputs_key_p2[INP_RIGHT].pressed) sfx_setvolume(sfx_volume + 50);
+}
+
+void menu_gotocontrols() {
+    if (inputs_key_p1[INP_ACTION2].pressed) {
+        curr_menu = &menu_control;
+        for (int8_t i = 0; i < INPUTS_AMT; i++) {
+            keyname_get(inputs_key_p1[i].key, inputs_key_p1[i].name);
+        }
+    }
 }
 
 #endif // SC_OPTMENU_H_INCLUDED

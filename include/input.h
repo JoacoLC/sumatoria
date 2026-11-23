@@ -2,30 +2,30 @@
 #define INPUT_H_INCLUDED
 
 extern void events_chk();
+extern void keyname_get(uintptr_t, char*);
+void inputs_init();
 
 typedef struct {
-	uintptr_t vk_pause;
-	uintptr_t vk_uppress;
-	uintptr_t vk_lfpress;
-	uintptr_t vk_dwpress;
-	uintptr_t vk_ripress;
-	uintptr_t sc_rotleft;
-	uintptr_t sc_rotright;
+	uintptr_t key;
+	bool 	  pressed;
+	char* 	  name;
+} input_t;
 
-	bool anykpress;
+#define INPUTS_AMT 8
 
-	bool uppress;
-	bool lfpress;
-	bool dwpress;
-	bool ripress;
+#define INP_PAUSE 	0
+#define INP_UP    	1
+#define INP_LEFT  	2
+#define INP_RIGHT 	3
+#define INP_DOWN  	4
+#define INP_ACTION1 5
+#define INP_ACTION2 6
+#define INP_ANYKEY  7
 
-	bool rotleft;
-	bool rotright;
-
-	bool pause;
-	
-	bool gameon;
-} events_t;
+input_t inputs_key_p1[INPUTS_AMT];
+input_t inputs_joy_p1[INPUTS_AMT];
+input_t inputs_key_p2[INPUTS_AMT];
+input_t inputs_joy_p2[INPUTS_AMT];
 
 #ifdef WINDOWS
 	#define SCANCODE_Z 0x002C
@@ -39,24 +39,37 @@ typedef struct {
 	#define KEYCODE_D 0x44
 #endif // WINDOWS
 
-events_t events = {
-	#ifdef WINDOWS
-	.vk_uppress = VK_UP,
-	.vk_lfpress = VK_LEFT,
-	.vk_dwpress = VK_DOWN,
-	.vk_ripress = VK_RIGHT,
+bool gameon = true;
 
-	.sc_rotleft  = SCANCODE_C,
-	.sc_rotright = SCANCODE_V,
+void inputs_init() {
+	inputs_key_p1[INP_PAUSE].key   = VK_ESCAPE;
+	inputs_key_p1[INP_UP].key 	   = VK_UP;
+	inputs_key_p1[INP_LEFT].key    = VK_LEFT;
+	inputs_key_p1[INP_DOWN].key    = VK_DOWN;
+	inputs_key_p1[INP_RIGHT].key   = VK_RIGHT;
+	inputs_key_p1[INP_ACTION1].key = SCANCODE_C;
+	inputs_key_p1[INP_ACTION2].key = SCANCODE_V;
+}
 
-	.vk_pause = VK_ESCAPE,
-	#endif // WINDOWS
 
-	.anykpress = false,
-	.uppress = false, .lfpress = false, .dwpress = false, .ripress = false,
-	.rotleft = false, .rotright = false,
-	.pause = false,
-	.gameon = true
-};
+// {
+	// #ifdef WINDOWS
+	// .VK_UPpress = VK_UP,
+	// .vk_lfpress = VK_LEFT,
+	// .vk_dwpress = VK_DOWN,
+	// .vk_ripress = VK_RIGHT,
+
+	// .sc_rotINP_LEFT  = SCANCODE_C,
+	// .sc_rotINP_RIGHT = SCANCODE_V,
+
+	// .vk_INP_pause = VK_ESCAPE,
+	// #endif // WINDOWS
+
+	// .anykpress = false,
+	// .INP_UPpress = false, .lfpress = false, .dwpress = false, .ripress = false,
+	// .rotINP_LEFT = false, .rotINP_RIGHT = false,
+	// .INP_pause = false,
+	// .gameon = true
+// };
 
 #endif // INPUT_H_INCLUDED
