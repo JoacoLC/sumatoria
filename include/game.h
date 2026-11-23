@@ -213,45 +213,54 @@ void piece_move(piece_t* piece, int x, int y) {
 bool piece_rotate(game_t* g, int leftorright) {
     piece_t temp = g->piece;
 
-    if (leftorright == RIGHT) {
-        temp.rotation.side1x = g->piece.rotation.side1y * -1;
-        temp.rotation.side1y = g->piece.rotation.side1x;
-        temp.rotation.side2x = g->piece.rotation.side2y * -1;
-        temp.rotation.side2y = g->piece.rotation.side2x;
-    } else if (leftorright == LEFT) {
-        temp.rotation.side1x = g->piece.rotation.side1y;
-        temp.rotation.side1y = g->piece.rotation.side1x * -1;
-        temp.rotation.side2x = g->piece.rotation.side2y;
-        temp.rotation.side2y = g->piece.rotation.side2x * -1;
-    } else return false;
-
-    // Wall kicks.
-    if (!block_isempty(g, temp.centerblock_pos.x + temp.rotation.side1x, temp.centerblock_pos.y + temp.rotation.side1y)) {
-        piece_move(&temp, temp.rotation.side1x * -1, temp.rotation.side1y * -1);
-    }
-    if (!block_isempty(g, temp.centerblock_pos.x + temp.rotation.side2x, temp.centerblock_pos.y + temp.rotation.side2y)) {
-        piece_move(&temp, temp.rotation.side2x * -1, temp.rotation.side2y * -1);
-    }
-
-    temp.sideblock1_pos.x = temp.centerblock_pos.x + temp.rotation.side1x;
-    temp.sideblock1_pos.y = temp.centerblock_pos.y + temp.rotation.side1y;
-    temp.sideblock2_pos.x = temp.centerblock_pos.x + temp.rotation.side2x;
-    temp.sideblock2_pos.y = temp.centerblock_pos.y + temp.rotation.side2y;
-
-    // Check if the wall kick would leave the piece in an impossible state (e.g., inside non-empty blocks).
-    if (
-        !block_isempty(g, temp.sideblock1_pos.x, temp.sideblock1_pos.y) ||
-        !block_isempty(g, temp.centerblock_pos.x, temp.centerblock_pos.y) ||
-        !block_isempty(g, temp.sideblock2_pos.x, temp.sideblock2_pos.y)
-    ) {
-        return false;
-    }
+    temp.sideblock1 = g->piece.sideblock2;
+    temp.sideblock2 = g->piece.sideblock1;
 
     g->piece = temp;
 
-    timer_set(TIMER_P1ROTATION, ROTATETIME);
-
     return true;
+
+    // if (leftorright == RIGHT) {
+    //     temp.rotation.side1x = g->piece.rotation.side1y * -1;
+    //     temp.rotation.side1y = g->piece.rotation.side1x;
+    //     temp.rotation.side2x = g->piece.rotation.side2y * -1;
+    //     temp.rotation.side2y = g->piece.rotation.side2x;
+    // } else if (leftorright == LEFT) {
+    //     temp.rotation.side1x = g->piece.rotation.side1y;
+    //     temp.rotation.side1y = g->piece.rotation.side1x * -1;
+    //     temp.rotation.side2x = g->piece.rotation.side2y;
+    //     temp.rotation.side2y = g->piece.rotation.side2x * -1;
+    // } else return false;
+
+    // // Wall kicks.
+    // if (!block_isempty(g, temp.centerblock_pos.x + temp.rotation.side1x, temp.centerblock_pos.y + temp.rotation.side1y)) {
+    //     piece_move(&temp, temp.rotation.side1x * -1, temp.rotation.side1y * -1);
+    // }
+    // if (!block_isempty(g, temp.centerblock_pos.x + temp.rotation.side2x, temp.centerblock_pos.y + temp.rotation.side2y)) {
+    //     piece_move(&temp, temp.rotation.side2x * -1, temp.rotation.side2y * -1);
+    // }
+
+    // temp.sideblock1_pos.x = temp.centerblock_pos.x + temp.rotation.side1x;
+    // temp.sideblock1_pos.y = temp.centerblock_pos.y + temp.rotation.side1y;
+    // temp.sideblock2_pos.x = temp.centerblock_pos.x + temp.rotation.side2x;
+    // temp.sideblock2_pos.y = temp.centerblock_pos.y + temp.rotation.side2y;
+
+    // // Check if the wall kick would leave the piece in an impossible state (e.g., inside non-empty blocks).
+    // if (
+    //     !block_isempty(g, temp.sideblock1_pos.x, temp.sideblock1_pos.y) ||
+    //     !block_isempty(g, temp.centerblock_pos.x, temp.centerblock_pos.y) ||
+    //     !block_isempty(g, temp.sideblock2_pos.x, temp.sideblock2_pos.y)
+    // ) {
+    //     return false;
+    // }
+
+    // g->piece = temp;
+
+    // timer_set(TIMER_P1ROTATION, ROTATETIME);
+
+    // return true;
+
+
 }
 
 bool block_isempty(game_t* g, int x, int y) {
