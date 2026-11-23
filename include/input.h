@@ -2,14 +2,16 @@
 #define INPUT_H_INCLUDED
 
 extern void events_chk();
-extern void keyname_get(uintptr_t, char buffer[2]);
+extern int  keyname_get(uintptr_t, char buffer[1]);
 void inputs_init();
 
 typedef struct {
 	uintptr_t key;
 	bool 	  pressed;
-	char  	  name[2];
+	char  	  name;
 } input_t;
+
+uintptr_t lastkeypressed;
 
 #define INPUTS_AMT 8
 
@@ -47,8 +49,13 @@ void inputs_init() {
 	inputs_key_p1[INP_LEFT].key    = VK_LEFT;
 	inputs_key_p1[INP_DOWN].key    = VK_DOWN;
 	inputs_key_p1[INP_RIGHT].key   = VK_RIGHT;
-	inputs_key_p1[INP_ACTION1].key = SCANCODE_C;
-	inputs_key_p1[INP_ACTION2].key = SCANCODE_V;
+	inputs_key_p1[INP_ACTION1].key = 'C';
+	inputs_key_p1[INP_ACTION2].key = 'V';
+
+	for (int8_t i = 0; i < INPUTS_AMT; i++) {
+    	if (!keyname_get(inputs_key_p1[i].key, &inputs_key_p1[i].name)) {
+		}
+    }
 }
 
 

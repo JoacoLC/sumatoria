@@ -9,6 +9,7 @@
 #endif // CINTERFACE
 
 #include <stdint.h>
+#include <stdio.h>
 #include <math.h>
 #include <windows.h>
 #include <mmreg.h>
@@ -258,8 +259,14 @@ void events_chk() {
     }
 }
 
-void keyname_get(uintptr_t key, char buffer[2]) {
-    GetKeyNameTextA(key, buffer, 2);
+int keyname_get(uintptr_t key, char buffer[1]) {
+    uint32_t retval = GetKeyNameText(key, buffer, 1);
+    #ifdef DEBUG
+        long unsigned error = GetLastError();
+        printf("FUCK!\n");
+        printf("%lu\n", error);
+    #endif // DEBUG
+    return retval;
 }
 
 LRESULT CALLBACK window_proc(HWND handle, UINT msg, WPARAM w_param, LPARAM l_param) {
@@ -283,12 +290,11 @@ LRESULT CALLBACK window_proc(HWND handle, UINT msg, WPARAM w_param, LPARAM l_par
         PostQuitMessage(0);
         return 0;
     } else if (msg == WM_KEYDOWN) {
+        lastkeypressed = w_param;
         inputs_key_p1[INP_ANYKEY].pressed = true;
-        for (uint8_t i = 0; i <= INP_DOWN; i++) {
+        for (uint8_t i = 0; i < INP_ANYKEY; i++) {
             inputs_key_p1[i].pressed = w_param == inputs_key_p1[i].key;
         }
-        inputs_key_p1[INP_ACTION1].pressed = LOBYTE(HIWORD(l_param)) == inputs_key_p1[INP_ACTION1].key;
-        inputs_key_p1[INP_ACTION2].pressed = LOBYTE(HIWORD(l_param)) == inputs_key_p1[INP_ACTION2].key;
     } else if (msg == WM_TIMER) {
          timers[w_param] = true;
          if (timers[TIMER_SFXCUT]) {

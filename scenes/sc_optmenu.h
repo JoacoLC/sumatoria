@@ -29,6 +29,7 @@ void menucontrol_render(menu_t*);
 
 void menu_unpause();
 void menu_gotocontrols();
+    void menu_selectcontrol();
     void menu_changecontrol();
 void menu_gotographics();
 
@@ -65,13 +66,13 @@ menuitem_t menusound_items[] = {
 };
 
 menuitem_t menucontrol_items[] = {
-    { NULL, " IZQUIERDA"  },
-    { NULL, " DERECHA"    },
-    { NULL, " ABAJO"      },
-    { NULL, " INSTACAIDA" },
-    { NULL, " ACCION 1"   },
-    { NULL, " ACCION 2"   },
-    { NULL, " PAUSA"      }
+    { &menu_selectcontrol, " PAUSA"      },
+    { &menu_selectcontrol, " INSTACAIDA" },
+    { &menu_selectcontrol, " IZQUIERDA"  },
+    { &menu_selectcontrol, " DERECHA"    },
+    { &menu_selectcontrol, " ABAJO"      },
+    { &menu_selectcontrol, " ACCION 1"   },
+    { &menu_selectcontrol, " ACCION 2"   }
 };
 
 menu_t menu_main = {
@@ -113,6 +114,23 @@ void sc_optmenu() {
     while (true) {
         events_chk();
         if (!gameon) return;
+
+        if (curr_menu == NULL) goto exit_menu;
+
+        if (inputs_key_p1[INP_ACTION2].pressed) {
+            curr_menu = curr_menu->prev_menu;
+        } else {
+            if (curr_menu->items[curr_menu->curr_item].action != NULL)
+                curr_menu->items[curr_menu->curr_item].action();
+        }
+
+        if (curr_menu == NULL) goto exit_menu;
+
+        if (curr_menu->items[curr_menu->curr_item].action == &menu_changecontrol) {
+            curr_menu->render_func(curr_menu);
+            continue;
+        }
+
         if (inputs_key_p1[INP_DOWN].pressed) { // Move cursor through the item list.
             if (curr_menu->curr_item < curr_menu->item_amount - 1) curr_menu->curr_item++;
             else curr_menu->curr_item = 0;
@@ -123,22 +141,19 @@ void sc_optmenu() {
             sfx_play(SFX_MOVE, SONG_LENGTH_MS(1));
         }
 
-        if (inputs_key_p1[INP_ACTION2].pressed) {
-            curr_menu = curr_menu->prev_menu;
-        } else {
-            if (curr_menu->items[curr_menu->curr_item].action != NULL)
-                curr_menu->items[curr_menu->curr_item].action();
-        }
-
-        if (inputs_key_p1[INP_PAUSE].pressed) curr_menu = NULL;
-
-        if (curr_menu == NULL) {
-            music_setvolume(music_getvolume() + OPTMENU_VOLUME_DIP);
-            sfx_setvolume(sfx_getvolume() + OPTMENU_VOLUME_DIP);
-            return;
+        if (inputs_key_p1[INP_PAUSE].pressed) {
+            curr_menu = NULL;
+            goto exit_menu;
         }
 
         curr_menu->render_func(curr_menu);
+
+        continue;
+
+    exit_menu:
+        music_setvolume(music_getvolume() + OPTMENU_VOLUME_DIP);
+        sfx_setvolume(sfx_getvolume() + OPTMENU_VOLUME_DIP);
+        return;
     }
 }
 
@@ -189,7 +204,8 @@ void menucontrol_render(menu_t* m) {
 
     menu_render(m);
     for (int i = 0; i < m->item_amount; i++) {
-        text_render(CELL_SIZE * 5, CELL_SIZE * i, inputs_key_p1[i].name);
+        // text_render(CELL_SIZE * 5, CELL_SIZE * i, &inputs_key_p1[i].name);
+        number_render(CELL_SIZE * 5, CELL_SIZE * i, 4, inputs_key_p1[i].key);
     }
     
     render();
@@ -225,9 +241,23 @@ void menu_sfxvolume() {
 void menu_gotocontrols() {
     if (inputs_key_p1[INP_ACTION1].pressed) {
         curr_menu = &menu_control;
-        for (int8_t i = 0; i < INPUTS_AMT; i++) {
-            keyname_get(inputs_key_p1[i].key, inputs_key_p1[i].name);
+    }
+}
+
+void menu_selectcontrol() {
+    if (inputs_key_p1[INP_ACTION1].pressed) {
+        curr_menu->items[curr_menu->curr_item].action = &menu_changecontrol;
+    }
+}
+
+void menu_changecontrol() {
+    if (inputs_key_p1[INP_ANYKEY].pressed) {
+        bool key_already_used = false;
+        for (int8_t i = 0; i < INPUTS_AMT - 1; i++) {
+            if (inputs_key_p1[i].key == lastkeypressed) key_already_used = true; 
         }
+        if (!key_already_used) inputs_key_p1[curr_menu->curr_item].key = lastkeypressed;
+        curr_menu->items[curr_menu->curr_item].action = &menu_selectcontrol;
     }
 }
 

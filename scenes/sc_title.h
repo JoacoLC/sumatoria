@@ -8,7 +8,7 @@ void sc_title() {
     text_spacingy = CELL_SIZE / 2;
 
     #ifdef DEBUG
-    clear_buf();
+    // clear_buf();
     draw_f(0,0, title, 70);
     #endif // DEBUG
 
