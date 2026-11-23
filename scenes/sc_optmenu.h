@@ -207,7 +207,7 @@ void menu_exitgame() {
 }
 
 void menu_gotosound() {
-    if (inputs_key_p1[INP_ACTION2].pressed) curr_menu = &menu_sound;
+    if (inputs_key_p1[INP_ACTION1].pressed) curr_menu = &menu_sound;
 }
 
 void menu_musicvolume() {
@@ -223,7 +223,7 @@ void menu_sfxvolume() {
 }
 
 void menu_gotocontrols() {
-    if (inputs_key_p1[INP_ACTION2].pressed) {
+    if (inputs_key_p1[INP_ACTION1].pressed) {
         curr_menu = &menu_control;
         for (int8_t i = 0; i < INPUTS_AMT; i++) {
             keyname_get(inputs_key_p1[i].key, inputs_key_p1[i].name);

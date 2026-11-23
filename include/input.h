@@ -2,13 +2,13 @@
 #define INPUT_H_INCLUDED
 
 extern void events_chk();
-extern void keyname_get(uintptr_t, char*);
+extern void keyname_get(uintptr_t, char buffer[2]);
 void inputs_init();
 
 typedef struct {
 	uintptr_t key;
 	bool 	  pressed;
-	char* 	  name;
+	char  	  name[2];
 } input_t;
 
 #define INPUTS_AMT 8

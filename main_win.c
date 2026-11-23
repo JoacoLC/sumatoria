@@ -258,8 +258,8 @@ void events_chk() {
     }
 }
 
-void keyname_get(uintptr_t key, char* buffer) {
-    GetKeyNameTextA(key, buffer, 1);
+void keyname_get(uintptr_t key, char buffer[2]) {
+    GetKeyNameTextA(key, buffer, 2);
 }
 
 LRESULT CALLBACK window_proc(HWND handle, UINT msg, WPARAM w_param, LPARAM l_param) {
