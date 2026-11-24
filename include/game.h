@@ -5,23 +5,27 @@
 #define RIGHT 		 1
 #define EMPTY_SPACE  ' '
 
+#define PLAYAREA_W      9
+#define PLAYAREA_H      13
+#define PLAYAREA_XSTART 1
+#define PLAYAREA_XEND   PLAYAREA_W - 2
+#define PLAYAREA_YSTART 3
+#define PLAYAREA_YEND   PLAYAREA_H - 2 
+
 #define SIDEBLOCK1_STARTX 3
-#define SIDEBLOCK1_STARTY 0
+#define SIDEBLOCK1_STARTY PLAYAREA_YSTART
 #define CENTERBLOCK_STARTX 4
-#define CENTERBLOCK_STARTY 0
+#define CENTERBLOCK_STARTY PLAYAREA_YSTART
 #define SIDEBLOCK2_STARTX 5
-#define SIDEBLOCK2_STARTY 0
+#define SIDEBLOCK2_STARTY PLAYAREA_YSTART
 
 #define ROTATETIME 50
-#define LOCKTIME   1000
+#define LOCKTIME   1000  
 
-#define PLAYAREA_W   9
-#define PLAYAREA_H   10
-
-#define BLOCK_MAXVAL  5
-#define BLOCK_MAXCHAR '0' + BLOCK_MAXVAL
-
-#define CURR_BLOCK playarea[y][x].visual
+#define BLOCK_MAXVAL     3
+#define BLOCK_MAXCHAR    '0' + BLOCK_MAXVAL
+#define BAG_MAX          BLOCK_MAXVAL * 2 + 2
+#define FULLRANDOM_BEGIN BAG_MAX - 2
 
 #define PLAYFIELD_RAISE     40
 #define DIFFICULTY_INCREASE 2
@@ -86,6 +90,10 @@ typedef struct game_s {
 
     block_t  playarea[PLAYAREA_H][PLAYAREA_W];
     piece_t  piece;
+
+    uint8_t bag[BAG_MAX][2];
+    uint8_t curr_piece;
+
     // Amount of time until the piece
     // locks to the stack once it's hit it.
     int16_t  lock_time;
@@ -119,7 +127,7 @@ void block_changeval(block_t*, uint8_t);
 void block_makesign(block_t*);
 void block_clear(block_t*);
 void populate_playarea(block_t[PLAYAREA_H][PLAYAREA_W]);
-void piece_new(piece_t*);
+void piece_new(game_t*);
 void piece_move(piece_t*, int, int);
 bool piece_rotate(game_t*, int);
 void next_level(game_t*);
@@ -154,25 +162,25 @@ void block_clear(block_t* block) {
 }
 
 void populate_playarea(block_t playarea[PLAYAREA_H][PLAYAREA_W]) {
-    for (uint8_t y = 0; y < PLAYAREA_H; y++) for (uint8_t x = 0; x < PLAYAREA_W; x++) {
+    for (uint8_t y = 3; y < PLAYAREA_H; y++) for (uint8_t x = 0; x < PLAYAREA_W; x++) {
         playarea[y][x].msprite_txt = NULL;
-        if (y < PLAYAREA_H - 1 && x == 0) {
+        if (y < PLAYAREA_YEND + 1 && x == PLAYAREA_XSTART - 1) {
             playarea[y][x].visual  = SIDE_BORDER;
             playarea[y][x].val     = BLOCK_MAXVAL + 1;
             playarea[y][x].msprite = &mspr_leftborder;
-        } else if (y < PLAYAREA_H - 1 && x == PLAYAREA_W - 1) {
+        } else if (y < PLAYAREA_YEND + 1 && x == PLAYAREA_XEND + 1) {
             playarea[y][x].visual  = SIDE_BORDER;
             playarea[y][x].val     = BLOCK_MAXVAL + 1;
             playarea[y][x].msprite = &mspr_rightborder;
-        } else if (y == PLAYAREA_H - 1 && x == 0) {
+        } else if (y == PLAYAREA_YEND + 1 && x == PLAYAREA_XSTART - 1) {
             playarea[y][x].visual  = LEFT_BORDER;
             playarea[y][x].val     = BLOCK_MAXVAL + 1;
             playarea[y][x].msprite = &mspr_leftcorner;
-        } else if (y == PLAYAREA_H - 1 && x == PLAYAREA_W - 1) {
+        } else if (y == PLAYAREA_YEND + 1 && x == PLAYAREA_XEND + 1) {
             playarea[y][x].visual  = RIGHT_BORDER;
             playarea[y][x].val     = BLOCK_MAXVAL + 1;
             playarea[y][x].msprite = &mspr_rightcorner;
-        } else if (y == PLAYAREA_H - 1) {
+        } else if (y == PLAYAREA_YEND + 1) {
             playarea[y][x].visual  = LOW_BORDER;
             playarea[y][x].val     = BLOCK_MAXVAL + 1;
             playarea[y][x].msprite = &mspr_lowborder;
@@ -181,24 +189,51 @@ void populate_playarea(block_t playarea[PLAYAREA_H][PLAYAREA_W]) {
             playarea[y][x].msprite = &mspr_quadempty;
         }
     }
+
+    block_makesign(&playarea[PLAYAREA_YSTART - 2][SIDEBLOCK1_STARTX]);
 }
 
-void piece_new(piece_t* piece) {
-    piece->sideblock1_pos.x  = SIDEBLOCK1_STARTX; // Reset piece to original position
-    piece->sideblock1_pos.y  = SIDEBLOCK1_STARTY;
-    piece->centerblock_pos.x = CENTERBLOCK_STARTX;
-    piece->centerblock_pos.y = CENTERBLOCK_STARTY;
-    piece->sideblock2_pos.x  = SIDEBLOCK2_STARTX;
-    piece->sideblock2_pos.y  = SIDEBLOCK2_STARTY;
-    piece->rotation.side1x   = -1;
-    piece->rotation.side1y   = 0;
-    piece->rotation.side2x   = 1;
-    piece->rotation.side2y   = 0;
+void piece_new(game_t* g) {
+    g->piece.sideblock1_pos.x  = SIDEBLOCK1_STARTX; // Reset piece to original position
+    g->piece.sideblock1_pos.y  = SIDEBLOCK1_STARTY;
+    g->piece.centerblock_pos.x = CENTERBLOCK_STARTX;
+    g->piece.centerblock_pos.y = CENTERBLOCK_STARTY;
+    g->piece.sideblock2_pos.x  = SIDEBLOCK2_STARTX;
+    g->piece.sideblock2_pos.y  = SIDEBLOCK2_STARTY;
+    g->piece.rotation.side1x   = -1;
+    g->piece.rotation.side1y   = 0;
+    g->piece.rotation.side2x   = 1;
+    g->piece.rotation.side2y   = 0;
 
 
-    block_makesign(&piece->sideblock1);
-    block_changeval(&piece->centerblock, randint() % 3 + 1);
-    block_changeval(&piece->sideblock2, randint() % 3 + 1);
+    block_makesign(&g->piece.sideblock1);
+    block_changeval(&g->piece.centerblock, g->bag[g->curr_piece][0]);
+    block_changeval(&g->piece.sideblock2, g->bag[g->curr_piece][1]);
+
+    g->curr_piece++;
+    if (g->curr_piece >= BAG_MAX) {
+        g->curr_piece = 0;
+
+        uint8_t temp[2];
+        uint8_t indextoswapwith;
+        
+        for (uint8_t i = 0; i < FULLRANDOM_BEGIN; i++) { // Shuffle bag.
+            temp[0] = g->bag[i][0];
+            temp[1] = g->bag[i][1];
+            indextoswapwith = randint() % FULLRANDOM_BEGIN;
+            g->bag[i][0] = g->bag[indextoswapwith][0];
+            g->bag[i][1] = g->bag[indextoswapwith][1];
+            g->bag[indextoswapwith][0] = temp[0];
+            g->bag[indextoswapwith][1] = temp[1];
+        }
+
+        for (uint8_t i = FULLRANDOM_BEGIN; i < BAG_MAX; i++) for (uint8_t j = 0; j < 2; j++) {
+            g->bag[i][j] = randint() % BLOCK_MAXVAL + 1;
+        }
+    }
+
+    block_changeval(&g->playarea[PLAYAREA_YSTART - 2][CENTERBLOCK_STARTX], g->bag[g->curr_piece][0]);
+    block_changeval(&g->playarea[PLAYAREA_YSTART - 2][SIDEBLOCK2_STARTX], g->bag[g->curr_piece][1]);
 }
 
 void piece_move(piece_t* piece, int x, int y) {

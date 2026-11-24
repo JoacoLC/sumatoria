@@ -4,7 +4,7 @@
 #define GAMENAME   "SUMATORIA"
 
 #define WIN_WIDTH   580
-#define WIN_HEIGHT  720
+#define WIN_HEIGHT  1080
 
 #define CMD_WIDTH   320
 #define CMD_HEIGHT  240

@@ -216,7 +216,7 @@ void menu_unpause() {
 }
 
 void menu_exitgame() {
-    if (inputs_key_p1[INP_ACTION2].pressed) {
+    if (inputs_key_p1[INP_ACTION1].pressed) {
         curr_scene = &sc_title;
         curr_menu  = NULL;
     }

@@ -32,6 +32,17 @@ void sc_game1p() {
         .piece.sideblock1.msprite  = &mspr_quadsign,
         .piece.centerblock.msprite = &mspr_quadnumber,
         .piece.sideblock2.msprite  = &mspr_quadnumber,
+        .bag = {
+            {1, 1},
+            {1, 2},
+            {1, 3},
+            {2, 2},
+            {2, 3},
+            {3, 3},
+            {randint() % BLOCK_MAXVAL + 1, randint() % BLOCK_MAXVAL + 1},
+            {randint() % BLOCK_MAXVAL + 1, randint() % BLOCK_MAXVAL + 1}
+        },
+        .curr_piece = BAG_MAX - 1,
         .fall_sub  = 10,
         .fall_add  = 10,
         .lock_time = LOCKTIME,
@@ -46,7 +57,7 @@ void sc_game1p() {
 
     populate_playarea(game1p.playarea);
     timer_set(TIMER_P1PIECEFALL, game1p.fall_speed);
-    piece_new(&game1p.piece);
+    piece_new(&game1p);
 
     while (game1p.on) {
         if (!gameon) {
@@ -127,7 +138,7 @@ static uintptr_t piece_fall(game_t* g) {
 static uintptr_t operation_calc(game_t* g) {
     g->operations_done = 0;
 
-    for (uint8_t y = 0; y < PLAYAREA_H - 1; y++) for (uint8_t x = 1; x < PLAYAREA_W - 1; x++) { // Operation.
+    for (uint8_t y = PLAYAREA_YSTART; y <= PLAYAREA_YEND; y++) for (uint8_t x = PLAYAREA_XSTART; x <= PLAYAREA_XEND; x++) { // Operation.
         if(!(is_number(g, x, y))) continue;
 
         if (is_sign(g, x+1, y) && is_number(g, x+2, y)) {
@@ -263,7 +274,7 @@ static uintptr_t blocks_fall(game_t* g) {
     events_chk();
     
     if (timers[TIMER_P1BLOCKFALL]) {
-        for (int8_t x = 1; x < PLAYAREA_W - 1; x++) for (int8_t y = PLAYAREA_H - 3; y >= 0; y--) {
+        for (int8_t x = PLAYAREA_XSTART; x <= PLAYAREA_XEND; x++) for (int8_t y = PLAYAREA_YEND; y >= PLAYAREA_YSTART; y--) {
             if (!block_isempty(g, x, y) && block_isempty(g, x, y + 1)) {
                 g->playarea[y + 1][x] = g->playarea[y][x];
                 block_clear(&g->playarea[y][x]);
@@ -287,7 +298,7 @@ static uintptr_t check_combostillgoing(game_t* g) {
 
     g->blocks_fell = false;
 
-    piece_new(&g->piece);
+    piece_new(g);
     g->combo = 0;
 
     if (!space_tomove(g, 0, 0)) {
@@ -322,8 +333,9 @@ static void game_render(game_t* g) {
         );
     }
 
+    text_spacingy = CELL_SIZE / 4;
+    text_render(CELL_SIZE * 2 + text_spacingx / 2, 0, "PROXIMA");  
     text_spacingy = CELL_SIZE;
-
     number_render(CELL_SIZE / 4, (PLAYAREA_H - 1) * CELL_SIZE, 15, g->score);
 
     text_spacingx = CELL_SIZE / 3;

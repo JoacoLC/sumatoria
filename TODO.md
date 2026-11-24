@@ -9,10 +9,9 @@
 * ~~Efectos de sonido~~
 * ~~Música~~
 * ~~Animación de explosión + efecto de sonido al eliminar un bloque~~
-* Cambiar detección de colisión en las rotaciones
-* Que puedan ocurrir dos operaciones en simultáneo
-* Mejorar randomización + piece preview
-* Cambiar el playfield que sube por bloques basura que caen cada 5 turnos.
+* ~~Cambiar detección de colisión en las rotaciones~~
+* ~~Que puedan ocurrir dos operaciones en simultáneo~~
+* ~~Mejorar randomización + piece preview~~
 * Números de colores que salen disparados y muestran cuántos puntos y combos hiciste al eliminar un bloque
 * Opciones de control
 * Soporte para mando
@@ -30,6 +29,10 @@
 La animación de explosión agregó 2KB
 
 Lodepng agregó cerca de 100KB
+
+Opciones de control agregaron 1KB
+
+Cambiar la rotación por flippeo quitó 1KB
 
 
 
