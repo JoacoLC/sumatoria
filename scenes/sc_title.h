@@ -12,16 +12,15 @@ void sc_title() {
     draw_f(0,0, title, 70);
     #endif // DEBUG
 
-    render_clear();
-    text_render(0, 0, title);
-    render();
-
     while (gameon) {
         events_chk();
         if (inputs_key_p1[INP_ANYKEY].pressed) {
             curr_scene = &sc_game1p;
             return;
         }
+        render_clear();
+        text_render(0, 0, title);
+        render();
     }
 }
 

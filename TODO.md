@@ -12,10 +12,12 @@
 * ~~Cambiar detección de colisión en las rotaciones~~
 * ~~Que puedan ocurrir dos operaciones en simultáneo~~
 * ~~Mejorar randomización + piece preview~~
-* Números de colores que salen disparados y muestran cuántos puntos y combos hiciste al eliminar un bloque
-* Opciones de control
+* ~~Opciones de control~~
 * Soporte para mando
-* Optimizar tiempos de carga (enteramente dependiente de la música y el sonido)
+* Optimizar tiempos de carga (enteramente dependiente de la música y el sonido, tendría que aprender a usar su\_render de sointu)
+* Solucionar bug por el cual no cargan los gráficos en PCs más viejas
+* Build de 32 bits
+* Números de colores que salen disparados y muestran cuántos puntos y combos hiciste al eliminar un bloque
 * Fondo con scrolling
 * Optimización de GPU (principalmente batching)
 * Optimización de RAM (probablemente mejore al mismo tiempo que los tiempos de carga de la música, aunque cambiar el modo de color a 8bit palettized tampoco vendría mal)
@@ -25,6 +27,8 @@
 * Screenshake al eliminar un bloque
 
 
+
+La spritesheet agrega 8KB
 
 La animación de explosión agregó 2KB
 

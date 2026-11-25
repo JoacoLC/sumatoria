@@ -12,91 +12,115 @@
 	HDC   dev_context	   = NULL;
 #endif // WINDOWS
 
+const unsigned char spritesheet_embed[] = {
+	#embed "spritesheet_v2.png"
+};
+
 texture_t spritesheet;
 
-const unsigned char* gl_errorget();
+void gl_errorget();
 
 void graphics_init() {
 	glMatrixMode(GL_PROJECTION);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glMatrixMode(GLPROJECTION);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glLoadIdentity();
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glLoadIdentity();\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	glOrtho(0.0, WIN_WIDTH, WIN_HEIGHT, 0.0, 1.0, -1.0);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glOrtho(0.0, WIN_WIDTH, WIN_HEIGHT, 0.0, 1.0, -1.0);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glMatrixMode(GL_MODELVIEW);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glMatrixMode(GL_MODELVIEW);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glLoadIdentity();
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glLoadIdentity();\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glClearColor(0.0, 0.0, 0.0, 1.0);\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	glEnable(GL_TEXTURE_2D);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glEnable(GL_TEXTURE_2D);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glEnable(GL_BLEND);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glEnable(GL_BLEND);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glDisable(GL_DEPTH_TEST);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glDisable(GL_DEPTH_TEST);\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	texture_free(&spritesheet);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("texture_free(&spritesheet);\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	unsigned width = 192, height = 128;
 	#ifdef DEBUG
 	unsigned error =
 	#endif // DEBUG
-	lodepng_decode32_file(&spritesheet.tex, &width, &height, "gfx\\spritesheet_v2.png");
+	lodepng_decode32(&spritesheet.tex, &width, &height, spritesheet_embed, sizeof spritesheet_embed);
 	#ifdef DEBUG
 	draw_f(0, 16, lodepng_error_text(error), 128);
 	#endif // DEBUG
 
 	glGenTextures(1, &spritesheet.name);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glGenTextures(1, &spritesheet.name);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glBindTexture(GL_TEXTURE_2D, spritesheet.name);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glBindTexture(GL_TEXTURE_2D, spritesheet.name);\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);\n");
+	gl_errorget();
 	#endif // DEBUG
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);\n");
+	gl_errorget();
 	#endif // DEBUG
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spritesheet.tex);
 	#ifdef DEBUG
-	printf(gl_errorget());
+	printf("glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spritesheet.tex);\n");
+	gl_errorget();
 	#endif // DEBUG
+    for (int8_t i = 0; i < 2; i++) {
+        text_render(0, CELL_SIZE, "GRAFICAZOS OK");
+        render();
+    }
 }
 
 void render() {
@@ -182,12 +206,36 @@ void number_render(float x, float y, int length, int number) {
 }
 
 
-const unsigned char* gl_errorget() {
+void gl_errorget() {
 	GLenum error = glGetError();
 
 	if (error != GL_NO_ERROR) {
-		return gluErrorString(error);
-	} else return NULL;
+		switch (error) {
+			case GL_INVALID_ENUM:
+			printf("Invalid enum!\n");
+			break;
+			case GL_INVALID_VALUE:
+			printf("Invalid value!\n");
+			break;
+			case GL_INVALID_OPERATION:
+			printf("Invalid operation!\n");
+			break;
+			case GL_NO_ERROR:
+			printf("No error!\n");
+			break;
+			case GL_STACK_OVERFLOW:
+			printf("Stack overflow!\n");
+			break;
+			case GL_STACK_UNDERFLOW:
+			printf("Stack underflow!\n");
+			break;
+			case GL_OUT_OF_MEMORY:
+			printf("Out of memory!\n");
+			break;
+			default:
+			break;
+		}
+	}
 }
 
 metasprite_t mspr_quadnumber = {

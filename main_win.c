@@ -65,9 +65,9 @@ int WINAPI WinMain(HINSTANCE currinst_hnd, HINSTANCE previnst_hnd, PSTR cmd_args
         NULL          // Additional application data
     );
 
+    graphics_init();
     seed_set();
     inputs_init();
-    graphics_init();
     sound_init();
 
     curr_scene = &sc_title;
@@ -133,10 +133,6 @@ DWORD               sfx_bufsize;
 DWORD               audio_whereplaycursor;
 
 void sound_init() {
-    render_clear();
-    text_render(0, 0, "CARGANDO TEMONES...");
-    render();
-
     #ifdef SU_LOAD_GMDLS
 	su_load_gmdls();
     #endif // SU_LOAD_GMDLS
@@ -174,6 +170,11 @@ void sound_init() {
     IDirectSound_CreateSoundBuffer(direct_sound, &musicbuf_description, &music_buffer, NULL);
 
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)sound_proc, NULL, 0, NULL);
+    
+    for (int8_t i = 0; i < 2; i++) {
+        text_render(0, CELL_SIZE * 2, "TEMONES OK");
+        render();
+    }
 }
 
 DWORD    write_cursor;
@@ -263,8 +264,8 @@ int keyname_get(uintptr_t key, char buffer[1]) {
     uint32_t retval = GetKeyNameText(key, buffer, 1);
     #ifdef DEBUG
         long unsigned error = GetLastError();
-        printf("FUCK!\n");
-        printf("%lu\n", error);
+        printf("FUCK! Couldn't get key names...\n");
+        printf("Error: %lu\n", error);
     #endif // DEBUG
     return retval;
 }
@@ -381,6 +382,11 @@ void seed_set() {
     int64_t hns = li.QuadPart;
 
     seed = hns / WINDOWS_TICKS_PER_SEC - EPOCH_DIFFERENCE;
+
+    for (int8_t i = 0; i < 2; i++) {
+        text_render(0, 0, "RAM OK");
+        render();
+    }
 }
 
 //  =======================
