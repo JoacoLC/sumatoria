@@ -137,6 +137,8 @@ static uintptr_t piece_fall(game_t* g) {
 
 static uintptr_t operation_calc(game_t* g) {
     g->operations_done = 0;
+    g->operationinfo[0].result = BLOCK_MAXVAL;
+    g->operationinfo[1].result = BLOCK_MAXVAL;
 
     for (uint8_t y = PLAYAREA_YSTART; y <= PLAYAREA_YEND; y++) for (uint8_t x = PLAYAREA_XSTART; x <= PLAYAREA_XEND; x++) { // Operation.
         if(!(is_number(g, x, y))) continue;
@@ -195,7 +197,7 @@ static uintptr_t operation_anim(game_t* g) {
         timer_set(TIMER_P1CLEARSIGN, OPERATIONSPEED);
         return (uintptr_t)&operation_anim;
     } else if (timers[TIMER_P1CLEARSIGN]) {
-        uintptr_t retval = (uintptr_t) &blocks_fall;
+        uintptr_t retval = (uintptr_t)&blocks_fall;
 
         for (int i = 0; i < g->operations_done; i++) {
             block_changeval (
@@ -233,8 +235,8 @@ static uintptr_t explosion_anim(game_t* g) {
         
         uint8_t j = 0;
         for (uint8_t i = 0; i < QUADTINY_AMT; i++) {
-            if (i == QUADTINY_AMT / 2) j = 1;
-            if (g->operations_done <= 1 && j == 1) break;
+            if (i >= QUADTINY_AMT / 2) j = 1;
+            if (g->operationinfo[j].result != 0) continue;
             g->quadtiny[i].position_x = g->operationinfo[j].endpos.x * CELL_SIZE + randint() % CELL_SIZE / 2;
             g->quadtiny[i].position_y = g->operationinfo[j].endpos.y * CELL_SIZE + randint() % CELL_SIZE / 2;
             g->quadtiny[i].vspeed     = -32;
@@ -246,7 +248,10 @@ static uintptr_t explosion_anim(game_t* g) {
     }
 
     if (timers[TIMER_P1EXPLOSIONFALL]) {
+        uint8_t j = 0;
         for (uint8_t i = 0; i < QUADTINY_AMT; i++) {
+            if (i >= QUADTINY_AMT / 2) j = 1;
+            if (g->operationinfo[j].result != 0) continue;
             g->quadtiny[i].position_y += g->quadtiny[i].vspeed;
             // g->quadtiny[i].position_x += g->quadtiny[i].hspeed;
             g->quadtiny[i].vspeed += GRAVITY;
@@ -254,7 +259,10 @@ static uintptr_t explosion_anim(game_t* g) {
     }
 
     if (timers[TIMER_P1EXPLOSIONFRAMESTEP]) {
+        uint8_t j = 0;
         for (uint8_t i = 0; i < QUADTINY_AMT; i++) {
+            if (i >= QUADTINY_AMT / 2) j = 1;
+            if (g->operationinfo[j].result != 0) continue;
             g->quadtiny[i].curr_frame++;
         }
     }
@@ -342,7 +350,10 @@ static void game_render(game_t* g) {
     text_spacingy = CELL_SIZE / 2;
 
     if (g->state == &explosion_anim) {
+        int8_t j = 0;
         for (int8_t i = 0; i < QUADTINY_AMT; i++) {
+            if (i >= QUADTINY_AMT / 2) j = 1;
+            if (g->operationinfo[j].result != 0) continue;
             if (g->quadtiny[i].curr_frame >= 3) continue;
             metasprite_render(
                 &mspr_quadtiny[g->quadtiny[i].curr_frame],

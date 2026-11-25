@@ -34,6 +34,14 @@ Opciones de control agregaron 1KB
 
 Cambiar la rotación por flippeo quitó 1KB
 
+Agregar sumatoria.rc agregó 4KB
+
+~~-DLODEPNG\_NO\_COMPILE\_ZLIB quitó 8KB~~ (la imagen no carga sin esto)
+
+\-DLODEPNG\_NO\_COMPILE\_ENCODER quitó 17KB
+
+\-DLODEPNG\_NO\_COMPILE\_ERROR\_TEXT quitó 7KB
+
 
 
 TERMINADO PARA EL 28/11 O ANTES

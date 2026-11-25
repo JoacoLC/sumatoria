@@ -29,8 +29,8 @@
 
 #define PLAYFIELD_RAISE     40
 #define DIFFICULTY_INCREASE 2
-#define DIFFICULTY_DECREASE 4
-#define FALLSPEED_MIN       300
+#define DIFFICULTY_DECREASE 3
+#define FALLSPEED_MIN       50
 #define FALLSPEED_MAX       2000
 #define COMBO_MAX           9
 

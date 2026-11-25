@@ -18,20 +18,53 @@ const unsigned char* gl_errorget();
 
 void graphics_init() {
 	glMatrixMode(GL_PROJECTION);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glLoadIdentity();
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	glOrtho(0.0, WIN_WIDTH, WIN_HEIGHT, 0.0, 1.0, -1.0);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glMatrixMode(GL_MODELVIEW);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glLoadIdentity();
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	glEnable(GL_TEXTURE_2D);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glEnable(GL_BLEND);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glDisable(GL_DEPTH_TEST);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	texture_free(&spritesheet);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	unsigned width = 192, height = 128;
 	#ifdef DEBUG
@@ -43,12 +76,27 @@ void graphics_init() {
 	#endif // DEBUG
 
 	glGenTextures(1, &spritesheet.name);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glBindTexture(GL_TEXTURE_2D, spritesheet.name);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spritesheet.tex);
+	#ifdef DEBUG
+	printf(gl_errorget());
+	#endif // DEBUG
 }
 
 void render() {
