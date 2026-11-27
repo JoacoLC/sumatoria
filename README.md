@@ -4,7 +4,7 @@
 
 #### **Por Joaquín Labanda**
 
-#### **CC-BY-NC-SA 2026**
+#### [**CC-BY-NC-SA**](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en) **2026**
 
 
 
