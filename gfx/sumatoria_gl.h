@@ -112,10 +112,16 @@ void graphics_init() {
 	gl_errorget();
 	#endif // DEBUG
 
+	// width  = 32;
+	// height = 32;
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spritesheet.tex);
 	#ifdef DEBUG
 	printf("glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spritesheet.tex);\n");
 	gl_errorget();
+	GLint max_tex_size;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size);
+	printf("Spritesheet size is %dx%d\n", width, height);
+	printf("Max texture size on this graphics card: %d\n", max_tex_size);
 	#endif // DEBUG
     for (int8_t i = 0; i < 2; i++) {
         text_render(0, CELL_SIZE, "GRAFICAZOS OK");

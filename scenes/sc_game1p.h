@@ -26,9 +26,8 @@ static void cmd_render(game_t*);
 void sc_game1p() {
     game_t game1p = {
         .level      = 0,
-        .fall_speed = 2000,
+        .fall_speed = FALLSPEED_MAX,
         .level      = 0,
-        .fall_speed = 2000,
         .piece.sideblock1.msprite  = &mspr_quadsign,
         .piece.centerblock.msprite = &mspr_quadnumber,
         .piece.sideblock2.msprite  = &mspr_quadnumber,
@@ -343,7 +342,7 @@ static void game_render(game_t* g) {
 
     text_spacingy = CELL_SIZE / 4;
     text_render(CELL_SIZE * 2 + text_spacingx / 2, 0, "PROXIMA");  
-    text_spacingy = CELL_SIZE;
+    text_spacingy = CELL_SIZE / 2;
     number_render(CELL_SIZE / 4, (PLAYAREA_H - 1) * CELL_SIZE, 15, g->score);
 
     text_spacingx = CELL_SIZE / 3;

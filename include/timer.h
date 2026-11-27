@@ -1,7 +1,7 @@
 #ifndef TIMER_H_INCLUDED
 #define TIMER_H_INCLUDED
 
-#define TIMERS_AMT 19
+#define TIMERS_AMT 20
 
 #define TIMER_P1PIECEFALL           0
 #define TIMER_P2PIECEFALL           1
@@ -22,6 +22,7 @@
 #define TIMER_P1EXPLOSIONFALL      16
 #define TIMER_P1EXPLOSIONFRAMESTEP 17
 #define TIMER_P1EXPLOSION          18
+#define TIMER_FLASHTEXT            19
 
 #define BLOCKFALLSPEED 50
 #define OPERATIONSPEED 75

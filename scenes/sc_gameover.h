@@ -2,7 +2,7 @@
 #define SC_GAMEOVER_H_INCLUDED
 
 void sc_gameover() {
-	const char* que_mal = "QUE MAL!\nARRIBA:REINTENTAR\nABAJO: INICIO";
+	const char* que_mal = "QUE MAL!\n\nARRIBA:REINTENTAR\nABAJO: INICIO";
 
 	text_spacingy = CELL_SIZE / 2;
 

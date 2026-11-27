@@ -6,7 +6,7 @@
 #define EMPTY_SPACE  ' '
 
 #define PLAYAREA_W      9
-#define PLAYAREA_H      13
+#define PLAYAREA_H      11
 #define PLAYAREA_XSTART 1
 #define PLAYAREA_XEND   PLAYAREA_W - 2
 #define PLAYAREA_YSTART 3
@@ -27,12 +27,13 @@
 #define BAG_MAX          BLOCK_MAXVAL * 2 + 2
 #define FULLRANDOM_BEGIN BAG_MAX - 2
 
-#define PLAYFIELD_RAISE     40
-#define DIFFICULTY_INCREASE 2
-#define DIFFICULTY_DECREASE 3
-#define FALLSPEED_MIN       50
-#define FALLSPEED_MAX       2000
-#define COMBO_MAX           9
+#define PLAYFIELD_RAISE         40
+#define DIFFICULTY_INCREASE     8
+#define DIFFICULTY_INCREASE_MAX 96
+#define DIFFICULTY_DECREASE     16
+#define FALLSPEED_MIN           200
+#define FALLSPEED_MAX           2500
+#define COMBO_MAX               9
 
 typedef struct {
 	int8_t x;
@@ -365,12 +366,13 @@ void next_level(game_t* g) {
 
     // Give players a break every few levels,
     // decreasing difficulty instead of increasing it.
-    if (g->level % 30 >= 20 && g->level < 255) {
-        g->fall_speed += g->fall_add;
-        g->fall_add   += DIFFICULTY_DECREASE;
+    if (g->level % 30 >= 20 && g->level < 128) {
+        g->fall_speed += DIFFICULTY_DECREASE;
+        g->fall_sub -= DIFFICULTY_INCREASE / 2;
     } else {
+        if (g->fall_sub < DIFFICULTY_INCREASE_MAX) g->fall_sub += DIFFICULTY_INCREASE;
+        else g->fall_sub = DIFFICULTY_INCREASE_MAX;
         g->fall_speed -= g->fall_sub;
-        g->fall_sub   += DIFFICULTY_INCREASE;
     }
 
     if (g->fall_speed < FALLSPEED_MIN) {
