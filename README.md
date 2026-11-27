@@ -74,10 +74,6 @@
 
 
 
-Meta de tamaño: 32KB
-
-
-
 *(Los números a continuación son aproximados)*
 
 
@@ -110,9 +106,9 @@ Archivo de recursos sumatoria.rc con el ícono agregó 4KB
 
 
 
-La música en Sointu agregó 80MB (se van sumando progresivamente)
+La música en Sointu agregó 80MB (se van sumando progresivamente durante el runtime)
 
-Gráficos agregaron 13MB
+Los gráficos agregaron 13MB
 
 
 
